@@ -24,3 +24,15 @@ WALL_SIZE = np.array([1, 1])
 TOWNHALL_HP = 500
 WALL_HP = 100
 KING_HP = 100
+BARB_HP = 75
+
+# damage
+KING_DAMAGE = 30
+BARB_DAMAGE = 15
+
+# movement speed
+KING_SPEED = 1
+BARB_SPEED = 1
+
+# king
+KING_RADIUS = 2
