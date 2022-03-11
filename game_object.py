@@ -1,10 +1,11 @@
 import numpy as np
+from numpy import ndarray
 
 import config as conf
 
 
 class GameObj:
-    def __init__(self, health, start_pos, size, char_repr, game):
+    def __init__(self, health: int, start_pos: ndarray, size: ndarray, char_repr: str, game):
         self.repr = None
         self.char_repr = char_repr
         self.health = health

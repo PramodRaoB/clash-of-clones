@@ -1,8 +1,8 @@
 import numpy as np
 from colorama import Fore, Back, Style
 
-GAME_WIDTH = 100
-GAME_HEIGHT = 40
+GAME_WIDTH = 150
+GAME_HEIGHT = 45
 
 BG_COLOUR = Back.BLACK
 
@@ -17,8 +17,8 @@ CHAR_HEALTH3 = Fore.LIGHTRED_EX
 CHAR_HEALTH4 = Fore.LIGHTBLACK_EX
 
 # height, width
-TOWNHALL_SIZE = [4, 3]
-WALL_SIZE = [1, 1]
+TOWNHALL_SIZE = np.array([4, 3])
+WALL_SIZE = np.array([1, 1])
 
 # hp
 TOWNHALL_HP = 500
