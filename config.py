@@ -18,10 +18,12 @@ CHAR_HEALTH4 = Fore.LIGHTBLACK_EX
 
 # height, width
 TOWNHALL_SIZE = np.array([4, 3])
+HUT_SIZE = np.array([2, 2])
 WALL_SIZE = np.array([1, 1])
 
 # hp
 TOWNHALL_HP = 500
+HUT_HP = 250
 WALL_HP = 100
 KING_HP = 100
 BARB_HP = 75

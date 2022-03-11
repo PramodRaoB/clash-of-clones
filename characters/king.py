@@ -16,6 +16,9 @@ class King(Character):
         super().move(np.array([Character.DX[ind], Character.DY[ind]]))
 
     def attack(self):
-        coords = np.array(
-            [[self.start_pos[0] + i, self.start_pos[1] + j] for j in range(-self._radius, self._radius + 1) for i in range(-self._radius, self._radius + 1)])
+        coords = np.empty((0, 2), int)
+        for i in range(-self.start_pos[0], self.start_pos[0] + self._radius + 1):
+            for j in range(-self.start_pos[1], self.start_pos[1] + self._radius + 1):
+                if abs(i - self.start_pos[0]) + abs(j - self.start_pos[1]) <= self._radius:
+                    coords = np.append(coords, np.array([[i, j]]), axis=0)
         super().attack(coords)

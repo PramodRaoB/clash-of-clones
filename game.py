@@ -8,6 +8,7 @@ from numpy import ndarray
 import config as conf
 from colorama import Fore, Back, Style
 
+from buildings.hut import Hut
 from buildings.townhall import TownHall
 from buildings.wall import Wall
 from characters.barbarian import Barbarian
@@ -54,8 +55,19 @@ class Game:
             self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] - 10]), self))
             self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] + 10]), self))
 
+        self.buildings.append(Hut(np.array([int(self._height / 4), int(self._width / 4)]), self))
+        self.buildings.append(Hut(np.array([int(self._height / 4), int(3 * self._width / 4)]), self))
+        self.buildings.append(Hut(np.array([int(3 * self._height / 4), int(self._width / 4)]), self))
+        self.buildings.append(Hut(np.array([int(3 * self._height / 4), int(3 * self._width / 4)]), self))
+        self.buildings.append(Hut(np.array([town_hall_pos[0] - 5, town_hall_pos[1] + 3]), self))
+
         # TODO: add others
         self.barbs.append(Barbarian(np.array([0, 0]), self))
+        self.barbs.append(Barbarian(np.array([20, 20]), self))
+        self.barbs.append(Barbarian(np.array([20, 120]), self))
+        self.barbs.append(Barbarian(np.array([20, 0]), self))
+        self.barbs.append(Barbarian(np.array([20, 150]), self))
+        self.barbs.append(Barbarian(np.array([50, 120]), self))
         self.buildings.append(self.townHall)
 
         # add king
@@ -79,6 +91,10 @@ class Game:
         if self.townHall is not None and self.townHall.is_dead():
             self.buildings.remove(self.townHall)
             self.townHall = None
+
+        for building in self.buildings:
+            if building is not None and building.is_dead():
+                self.buildings.remove(building)
 
         for wall in self.walls:
             if wall is not None and wall.is_dead():
