@@ -1,6 +1,7 @@
 import sys
 
 from numpy import ndarray
+from colorama import Fore, Style
 
 import config as conf
 import numpy as np
@@ -50,3 +51,20 @@ class Scene:
     def add_object(self, obj: GameObj):
         self.frame[obj.start_pos[0]:obj.start_pos[0] + obj.size[0],
         obj.start_pos[1]:obj.start_pos[1] + obj.size[1]] = obj.repr
+
+    def game_over(self, won, score, time_elapsed, troops):
+        self.clear()
+        self.display()
+        print_screen = self.move_cursor(int(self._size[0] / 2), int(self._size[1] / 2))
+        if won:
+            print_screen += Fore.GREEN + Style.BRIGHT
+            print_screen += "You won!\n"
+        else:
+            print_screen += Fore.RED + Style.BRIGHT
+            print_screen += "You lost!\n"
+
+        print_screen += "You scored: " + str(score) + "\n"
+        print_screen += "You survived for: " + str(time_elapsed) + "s\n"
+        print_screen += "You expended: " + str(troops) + " barbarians\n"
+        print_screen += "\n\n\n"
+        sys.stdout.write(print_screen)

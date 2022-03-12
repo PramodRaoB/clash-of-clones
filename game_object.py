@@ -1,11 +1,14 @@
+import time
+
 import numpy as np
 from numpy import ndarray
 
 import config as conf
+from utils import wait
 
 
 class GameObj:
-    def __init__(self, health: int, start_pos: ndarray, size: ndarray, char_repr: str, game):
+    def __init__(self, health: int, start_pos: ndarray, size: ndarray, char_repr: str, game, cooldown: int):
         self.repr = None
         self.char_repr = char_repr
         self.health = health
@@ -13,6 +16,8 @@ class GameObj:
         self.start_pos = start_pos
         self.size = size  # height, width
         self.game = game
+        self.last_attack = time.time()
+        self.cooldown = cooldown
         self.update_colours()
 
     def update_colours(self):
@@ -65,4 +70,21 @@ class GameObj:
                             min_point = [k, l]
         return ans, min_point
 
+    def get_target_from_me(self):
+        ret = []
+        for building in self.game.buildings:
+            if building is not None and not building.is_dead():
+                ret.append((self.distance_to(building), building))
 
+        return ret
+
+    def get_closest_target(self):
+        arr = self.get_target_from_me()
+        min_dist = self.game.size[0] + self.game.size[1]
+        min_ret = None
+        for i in arr:
+            if i[0][0] < min_dist:
+                min_dist = i[0][0]
+                min_ret = i
+
+        return min_ret

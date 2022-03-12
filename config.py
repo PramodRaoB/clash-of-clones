@@ -18,23 +18,31 @@ CHAR_HEALTH4 = Fore.LIGHTBLACK_EX
 
 # height, width
 TOWNHALL_SIZE = np.array([4, 3])
-HUT_SIZE = np.array([2, 2])
+HUT_SIZE = np.array([3, 3])
+CANNON_SIZE = np.array([2, 2])
 WALL_SIZE = np.array([1, 1])
+SPAWNER_SIZE = np.array([1, 1])
 
 # hp
 TOWNHALL_HP = 500
 HUT_HP = 250
+CANNON_HP = 50
 WALL_HP = 100
 KING_HP = 100
 BARB_HP = 75
 
 # damage
 KING_DAMAGE = 30
+CANNON_DAMAGE = 5
 BARB_DAMAGE = 15
 
 # movement speed
-KING_SPEED = 1
-BARB_SPEED = 1
+KING_SPEED = 0.05
+BARB_SPEED = 0.01
 
-# king
 KING_RADIUS = 2
+CANNON_RADIUS = 40
+
+BARB_COOLDOWN = 0.2
+CANNON_COOLDOWN = 0.4
+SPAWNER_COOLDOWN = 5
