@@ -1,12 +1,10 @@
 import time
-from typing import List
 
 import numpy as np
 from numpy import ndarray
 
-from game_object import GameObj
-import config as conf
-from scene import Scene
+from src.game_object import GameObj
+from src import config as conf
 
 
 class Character(GameObj):
@@ -14,8 +12,10 @@ class Character(GameObj):
     DY = [0, -1, 0, 1]
 
     def __init__(self, health: int, damage: int, movement_speed: int, start_pos: ndarray, char_repr: str, game, cooldown=0):
-        self._damage = damage
+        self.damage = damage
+        self.base_damage = damage
         self.movement_speed = movement_speed
+        self.base_movement_speed = movement_speed
         self.last_move = time.time()
         super().__init__(health, start_pos, np.array([1, 1]), char_repr, game, cooldown)
 
@@ -45,5 +45,5 @@ class Character(GameObj):
             self.start_pos -= move_dir
 
     def attack(self, coords: ndarray):
-        super().attack(self._damage, coords)
+        super().attack(self.damage, coords)
 

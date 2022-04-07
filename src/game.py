@@ -5,20 +5,23 @@ import time
 import numpy as np
 from numpy import ndarray
 
-import config as conf
+import src.config as conf
 from colorama import Fore, Back, Style
 
-from buildings.cannon import Cannon
-from buildings.hut import Hut
-from buildings.spawner import Spawner
-from buildings.townhall import TownHall
-from buildings.wall import Wall
-from characters.barbarian import Barbarian
-from characters.king import King
-from input import Get
-from scene import Scene
-from input import input_to
+from src.buildings.cannon import Cannon
+from src.buildings.hut import Hut
+from src.buildings.spawner import Spawner
+from src.buildings.townhall import TownHall
+from src.buildings.wall import Wall
+from src.characters.king import King
+from src.spells.heal import Heal
+from src.spells.rage import Rage
+from src.spells.spell import Spell
+from src.input import Get
+from src.scene import Scene
+from src.input import input_to
 
+from src.utils import wait, play_audio
 
 class Game:
     def __init__(self):
@@ -36,7 +39,7 @@ class Game:
         self.scene = Scene(self.size)
         self._input = Get()
 
-        self._frame_rate = 1 / 20
+        self._frame_rate = 1 / 30
         self._previous_frame = time.time()
         self.walls = []
         self.cannons = []
@@ -44,11 +47,18 @@ class Game:
         self.barbs = []
         self.characters = []
         self.spawners = []
+        self.last_rage = 0
+        self.last_heal = 0
+        self.active_spells = []
+        self.last_theme = time.time()
 
         self.over = False
         self._score = 0
         self._start_time = time.time()
         self._troops = 0
+        self._rages = 0
+        self._heals = 0
+
         self.new_game()
 
     def new_game(self):
@@ -61,6 +71,7 @@ class Game:
         for i in range(-10, 11):
             self.walls.append(Wall(np.array([town_hall_pos[0] - 10, town_hall_pos[1] - i]), self))
             self.walls.append(Wall(np.array([town_hall_pos[0] + 10, town_hall_pos[1] - i]), self))
+        for i in range(-9, 10):
             self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] - 10]), self))
             self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] + 10]), self))
 
@@ -71,11 +82,12 @@ class Game:
         self.buildings.append(Hut(np.array([town_hall_pos[0] - 5, town_hall_pos[1] + 3]), self))
 
         self.cannons.append(Cannon(np.array([town_hall_pos[0] - 7, town_hall_pos[1] + 7]), self))
+        self.cannons.append(Cannon(np.array([30, 20]), self))
+        self.cannons.append(Cannon(np.array([self.size[0] - 10, self.size[1] - 10]), self))
 
-        # TODO: add others
         self.spawners.append(Spawner(np.array([10, 10]), self))
         self.spawners.append(Spawner(np.array([25, 140]), self))
-        self.spawners.append(Spawner(np.array([40, 100]), self))
+        self.spawners.append(Spawner(np.array([30, 100]), self))
 
         self.buildings.append(self.townHall)
         for cannon in self.cannons:
@@ -85,8 +97,11 @@ class Game:
         self.king = King(np.array([0, 0]), self)
         self.characters.append(self.king)
 
+        play_audio("src/assets/intro.mp3")
+        play_audio("src/assets/theme.mp3")
+
     def handle_input(self):
-        inp = input_to(self._input)
+        inp = input_to(self._input, self._frame_rate)
         if inp is None:
             return
         if inp in King.KEYS:
@@ -98,31 +113,63 @@ class Game:
                 self.king.move(inp)
 
         if inp in Spawner.KEYS:
-            self.spawners[int(inp) - int("1")].update()
+            if self.spawners[int(inp) - int("1")].update():
+                self._troops += 1
+
+        if inp in Spell.KEYS:
+            if inp == 'r':
+                if not wait(self.last_rage, conf.RAGE_COOLDOWN):
+                    self.last_rage = time.time()
+                    self.active_spells.append(Rage(self))
+                    self._rages += 1
+            else:
+                if not wait(self.last_heal, conf.HEAL_COOLDOWN):
+                    self.last_heal = time.time()
+                    Heal(self)
+                    self._heals += 1
 
         if inp == 'q':
-            sys.exit(0)
+            self.over = True
+            time.sleep(2)
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
 
     def prune_dead(self):
         if self.townHall is not None and self.townHall.is_dead():
             self.buildings.remove(self.townHall)
             self.townHall = None
+            self._score += conf.TOWNHALL_SCORE
 
         if self.king is not None and self.king.is_dead():
             self.characters.remove(self.king)
             self.king = None
 
-        for building in self.buildings:
-            if building is not None and building.is_dead():
-                self.buildings.remove(building)
+        for cannon in self.cannons:
+            if cannon is not None and cannon.is_dead():
+                self.buildings.remove(cannon)
+                self.cannons.remove(cannon)
+                self._score += conf.CANNON_SCORE
 
         for wall in self.walls:
             if wall is not None and wall.is_dead():
                 self.walls.remove(wall)
+                self._score += conf.WALL_SCORE
+
+        for barb in self.barbs:
+            if barb is not None and barb.is_dead():
+                self.characters.remove(barb)
+                self.barbs.remove(barb)
+
+        for building in self.buildings:
+            if building is not None and building.is_dead():
+                self.buildings.remove(building)
 
         for c in self.characters:
             if c is not None and c.is_dead():
                 self.characters.remove(c)
+
+        for spell in self.active_spells:
+            if spell is not None and spell.is_over:
+                self.active_spells.remove(spell)
 
     def render(self):
         for spawner in self.spawners:
@@ -157,31 +204,38 @@ class Game:
         for cannon in self.cannons:
             cannon.update()
 
+        for spell in self.active_spells:
+            spell.update()
+
     def check_game_over(self):
         if len(self.buildings) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops)
+            self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
         elif len(self.characters) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops)
-        print(f"{len(self.buildings)} and {len(self.characters)}")
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
+
 
     def play(self):
         while not self.over:
             # Game logic
             self.handle_input()
-            self.prune_dead()
-            self.update_alive()
+            if time.time() - self.last_theme > 180:
+                play_audio("src/assets/theme.mp3")
+            if not self.over:
+                self.prune_dead()
+                self.update_alive()
 
-            # Render objects
-            self.scene.clear()
-            self.render()
-            self.scene.display()
+                # Render objects
+                self.scene.clear()
+                self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
+                self.render()
+                self.scene.display()
 
-            self.check_game_over()
+                self.check_game_over()
 
-            while time.time() - self._previous_frame < self._frame_rate:
-                pass
-            self._previous_frame = time.time()
+                while time.time() - self._previous_frame < self._frame_rate:
+                    pass
+                self._previous_frame = time.time()

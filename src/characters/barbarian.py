@@ -2,9 +2,9 @@ import time
 
 import numpy as np
 
-import config as conf
-from characters.character import Character
-from utils import wait
+from src import config as conf
+from src.characters.character import Character
+from src.utils import wait, play_audio
 
 
 class Barbarian(Character):
@@ -14,7 +14,6 @@ class Barbarian(Character):
     def move(self):
         if wait(self.last_move, self.movement_speed):
             return
-        self.last_move = time.time()
         target = self.get_closest_target()
         if target is None:
             return
@@ -30,13 +29,15 @@ class Barbarian(Character):
         if ret_structure is not None:
             self.attack(ret_structure)
         else:
+            self.last_move = time.time()
             super().move(move_dir)
 
     def attack(self, target_obj):
         if wait(self.last_attack, self.cooldown):
             return
         self.last_attack = time.time()
-        target_obj.take_damage(self._damage)
+        play_audio("src/assets/barb_sword.mp3")
+        target_obj.take_damage(self.damage)
 
     def update(self):
         self.move()

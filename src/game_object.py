@@ -3,8 +3,7 @@ import time
 import numpy as np
 from numpy import ndarray
 
-import config as conf
-from utils import wait
+import src.config as conf
 
 
 class GameObj:
@@ -20,9 +19,9 @@ class GameObj:
         self.cooldown = cooldown
         self.update_colours()
 
-    def update_colours(self):
+    def update_colours(self, col=''):
         self.repr = np.array(
-            [[self.get_current_color() + self.char_repr for j in range(self.size[1])] for i in range(self.size[0])],
+            [[col + self.get_current_color() + self.char_repr for j in range(self.size[1])] for i in range(self.size[0])],
             dtype='object')
 
     def get_current_color(self):

@@ -1,6 +1,6 @@
 import os
 
-from game import Game
+from src.game import Game
 
 if os.name == 'nt':
     os.system('cls')

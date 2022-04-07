@@ -1,7 +1,7 @@
 from numpy import ndarray
 
-from buildings.building import Building
-import config as conf
+from src.buildings.building import Building
+from src import config as conf
 
 
 class Wall(Building):

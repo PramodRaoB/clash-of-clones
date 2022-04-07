@@ -2,9 +2,9 @@ import time
 
 from numpy import ndarray
 
-from buildings.building import Building
-import config as conf
-from utils import wait
+from src.buildings.building import Building
+from src import config as conf
+from src.utils import wait, play_audio
 
 
 class Cannon(Building):
@@ -22,19 +22,6 @@ class Cannon(Building):
 
         return ret
 
-    def get_current_color(self):
-        time_elapsed = time.time() - self.last_attack
-        if time_elapsed < self.cooldown / 2:
-            output_color = conf.CANNON1
-        else:
-            output_color = conf.CANNON0
-
-        if self.health / self.max_health > 0.5:
-            return output_color + conf.HEALTH0
-        elif self.health / self.max_health > 0.2:
-            return output_color + conf.HEALTH1
-        else:
-            return output_color + conf.HEALTH2
 
     def attack(self):
         self.update_colours()
@@ -45,6 +32,7 @@ class Cannon(Building):
             target_dist = target[0][0]
             if target_dist <= self._radius:
                 target[1].take_damage(self._damage)
+                play_audio("src/assets/cannon.mp3")
                 self.last_attack = time.time()
 
     def update(self):

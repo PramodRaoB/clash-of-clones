@@ -2,9 +2,9 @@ import time
 
 import numpy as np
 
-import config as conf
-from characters.character import Character
-from utils import wait
+from src import config as conf
+from src.characters.character import Character
+from src.utils import wait, play_audio
 
 
 class King(Character):
@@ -12,7 +12,7 @@ class King(Character):
 
     def __init__(self, start_pos, game):
         self._radius = conf.KING_RADIUS
-        super().__init__(conf.KING_HP, conf.KING_DAMAGE, conf.KING_SPEED, start_pos, 'P', game)
+        super().__init__(conf.KING_HP, conf.KING_DAMAGE, conf.KING_SPEED, start_pos, 'P', game, conf.KING_COOLDOWN)
 
     def move(self, inp: str):
         if wait(self.last_move, self.movement_speed):
@@ -30,4 +30,5 @@ class King(Character):
             for j in range(-self.start_pos[1], self.start_pos[1] + self._radius + 1):
                 if abs(i - self.start_pos[0]) + abs(j - self.start_pos[1]) <= self._radius:
                     coords = np.append(coords, np.array([[i, j]]), axis=0)
+        play_audio("src/assets/swing.mp3")
         super().attack(coords)
