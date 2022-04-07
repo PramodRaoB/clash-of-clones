@@ -12,7 +12,7 @@ class Cannon(Building):
         self._radius = conf.CANNON_RADIUS
         self._damage = conf.CANNON_DAMAGE
         self._colour_change = 0
-        super().__init__(conf.CANNON_HP, start_pos, conf.CANNON_SIZE, '{', game, conf.CANNON_COOLDOWN)
+        super().__init__(conf.CANNON_HP, start_pos, conf.CANNON_SIZE, '{', True, game, conf.CANNON_COOLDOWN)
 
     def get_target_from_me(self):
         ret = []

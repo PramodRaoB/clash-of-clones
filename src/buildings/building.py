@@ -7,7 +7,8 @@ from src.game_object import GameObj
 
 
 class Building(GameObj):
-    def __init__(self, health: int, start_pos: ndarray, size: ndarray, char_repr: str, game, cooldown=0):
+    def __init__(self, health: int, start_pos: ndarray, size: ndarray, char_repr: str, is_defensive, game, cooldown=0):
+        self.is_defensive = is_defensive
         super().__init__(health, start_pos, size, char_repr, game, cooldown)
 
     def get_current_color(self):

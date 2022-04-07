@@ -10,6 +10,9 @@ from colorama import Fore, Back, Style
 
 from src.buildings.cannon import Cannon
 from src.buildings.hut import Hut
+from src.buildings.barb_spawner import BarbSpawner
+from src.buildings.archer_spawner import ArcherSpawner
+from src.buildings.balloon_spawner import BalloonSpawner
 from src.buildings.spawner import Spawner
 from src.buildings.townhall import TownHall
 from src.buildings.wall import Wall
@@ -22,6 +25,7 @@ from src.scene import Scene
 from src.input import input_to
 
 from src.utils import wait, play_audio
+
 
 class Game:
     def __init__(self):
@@ -85,9 +89,9 @@ class Game:
         self.cannons.append(Cannon(np.array([30, 20]), self))
         self.cannons.append(Cannon(np.array([self.size[0] - 10, self.size[1] - 10]), self))
 
-        self.spawners.append(Spawner(np.array([10, 10]), self))
-        self.spawners.append(Spawner(np.array([25, 140]), self))
-        self.spawners.append(Spawner(np.array([30, 100]), self))
+        self.spawners.append(BalloonSpawner(np.array([10, 10]), self))
+        self.spawners.append(BalloonSpawner(np.array([25, 140]), self))
+        self.spawners.append(BalloonSpawner(np.array([30, 100]), self))
 
         self.buildings.append(self.townHall)
         for cannon in self.cannons:
@@ -131,7 +135,8 @@ class Game:
         if inp == 'q':
             self.over = True
             time.sleep(2)
-            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                 self._heals)
 
     def prune_dead(self):
         if self.townHall is not None and self.townHall.is_dead():
@@ -211,12 +216,13 @@ class Game:
         if len(self.buildings) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
+            self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                 self._heals)
         elif len(self.characters) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
-
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                 self._heals)
 
     def play(self):
         while not self.over:
@@ -230,7 +236,12 @@ class Game:
 
                 # Render objects
                 self.scene.clear()
-                self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages, self._heals)
+                if self.king is not None:
+                    self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                   self._heals, self.king.health, self.king.max_health)
+                else:
+                    self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                   self._heals)
                 self.render()
                 self.scene.display()
 

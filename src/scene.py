@@ -30,7 +30,7 @@ class Scene:
                               dtype='object')
 
     def display(self):
-        print_screen = self.move_cursor(7, 0)
+        print_screen = self.move_cursor(8, 0)
         for i in range(self._size[0]):
             for j in range(self._size[1]):
                 print_screen += self.frame[i][j]
@@ -93,8 +93,14 @@ class Scene:
         self.save_replay()
         sys.stdout.write(print_screen)
 
-    def hud(self, score, time_elapsed, troops, rage, heal):
+    def hud(self, score, time_elapsed, troops, rage, heal, health=0, max_health=100):
         print_screen = self.move_cursor(0, 0)
+        print_screen += "PLayer health: "
+        for i in range(health * 10 // max_health):
+            print_screen += "❤"
+        for i in range((max_health - health) * 10 // max_health):
+            print_screen += " "
+        print_screen += "\n"
         print_screen += "Score: " + str(score) + "\n"
         print_screen += "Time elapsed: " + str(time_elapsed) + "s\n"
         print_screen += "You expended: \n" \
