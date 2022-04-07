@@ -17,6 +17,7 @@ from src.buildings.spawner import Spawner
 from src.buildings.townhall import TownHall
 from src.buildings.wall import Wall
 from src.characters.king import King
+from src.characters.queen import Queen
 from src.spells.heal import Heal
 from src.spells.rage import Rage
 from src.spells.spell import Spell
@@ -30,7 +31,7 @@ from src.utils import wait, play_audio
 class Game:
     def __init__(self):
         # check if current terminal size is sufficient for the game
-        self.king = None
+        self.player = None
         self.townHall = None
         term_sz = os.get_terminal_size()
         if term_sz.lines < conf.GAME_HEIGHT or term_sz.columns < conf.GAME_WIDTH:
@@ -98,8 +99,9 @@ class Game:
             self.buildings.append(cannon)
 
         # add king
-        self.king = King(np.array([0, 0]), self)
-        self.characters.append(self.king)
+        # self.player = King(np.array([0, 0]), self)
+        self.player = Queen(np.array([0, 0]), self)
+        self.characters.append(self.player)
 
         play_audio("src/assets/intro.mp3")
         play_audio("src/assets/theme.mp3")
@@ -109,12 +111,12 @@ class Game:
         if inp is None:
             return
         if inp in King.KEYS:
-            if self.king is None:
+            if self.player is None:
                 return
             if inp == ' ':
-                self.king.attack()
+                self.player.attack()
             else:
-                self.king.move(inp)
+                self.player.move(inp)
 
         if inp in Spawner.KEYS:
             if self.spawners[int(inp) - int("1")].update():
@@ -144,9 +146,9 @@ class Game:
             self.townHall = None
             self._score += conf.TOWNHALL_SCORE
 
-        if self.king is not None and self.king.is_dead():
-            self.characters.remove(self.king)
-            self.king = None
+        if self.player is not None and self.player.is_dead():
+            self.characters.remove(self.player)
+            self.player = None
 
         for cannon in self.cannons:
             if cannon is not None and cannon.is_dead():
@@ -236,9 +238,9 @@ class Game:
 
                 # Render objects
                 self.scene.clear()
-                if self.king is not None:
+                if self.player is not None:
                     self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                   self._heals, self.king.health, self.king.max_health)
+                                   self._heals, self.player.health, self.player.max_health)
                 else:
                     self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
                                    self._heals)
