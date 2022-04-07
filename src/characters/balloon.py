@@ -12,7 +12,7 @@ from src.utils import wait, play_audio
 class Balloon(Character):
     def __init__(self, start_pos, game):
         super().__init__(conf.BALLOON_HP, conf.BALLOON_DAMAGE, conf.BALLOON_SPEED, start_pos, '0', game,
-                         conf.BALLOON_COOLDOWN)
+                         conf.BALLOON_COOLDOWN, True)
 
     def move(self):
         if wait(self.last_move, self.movement_speed):

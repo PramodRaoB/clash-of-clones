@@ -16,6 +16,7 @@ from src.buildings.balloon_spawner import BalloonSpawner
 from src.buildings.spawner import Spawner
 from src.buildings.townhall import TownHall
 from src.buildings.wall import Wall
+from src.buildings.wizard_tower import WizardTower
 from src.characters.king import King
 from src.characters.queen import Queen
 from src.spells.heal import Heal
@@ -86,9 +87,9 @@ class Game:
         self.buildings.append(Hut(np.array([int(3 * self._height / 4), int(3 * self._width / 4)]), self))
         self.buildings.append(Hut(np.array([town_hall_pos[0] - 5, town_hall_pos[1] + 3]), self))
 
-        self.cannons.append(Cannon(np.array([town_hall_pos[0] - 7, town_hall_pos[1] + 7]), self))
-        self.cannons.append(Cannon(np.array([30, 20]), self))
-        self.cannons.append(Cannon(np.array([self.size[0] - 10, self.size[1] - 10]), self))
+        self.cannons.append(WizardTower(np.array([town_hall_pos[0] - 7, town_hall_pos[1] + 7]), self))
+        self.cannons.append(WizardTower(np.array([30, 20]), self))
+        self.cannons.append(WizardTower(np.array([self.size[0] - 10, self.size[1] - 10]), self))
 
         self.spawners.append(BalloonSpawner(np.array([10, 10]), self))
         self.spawners.append(BalloonSpawner(np.array([25, 140]), self))
@@ -202,6 +203,14 @@ class Game:
                 return building
 
         return None
+
+    def get_character_on_coord(self, coords: ndarray):
+        ret = []
+        for c in self.characters:
+            if c is not None and not c.is_dead() and c.is_intersecting(coords):
+                ret.append(c)
+
+        return ret
 
     def update_alive(self):
         for barb in self.barbs:

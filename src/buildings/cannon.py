@@ -17,7 +17,7 @@ class Cannon(Building):
     def get_target_from_me(self):
         ret = []
         for c in self.game.characters:
-            if c is not None and not c.is_dead():
+            if c is not None and not c.is_dead() and not c.is_aerial:
                 ret.append((self.distance_to(c), c))
 
         return ret

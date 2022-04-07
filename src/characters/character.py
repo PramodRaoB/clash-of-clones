@@ -11,7 +11,9 @@ class Character(GameObj):
     DX = [-1, 0, 1, 0]
     DY = [0, -1, 0, 1]
 
-    def __init__(self, health: int, damage: int, movement_speed: int, start_pos: ndarray, char_repr: str, game, cooldown=0):
+    def __init__(self, health: int, damage: int, movement_speed: int, start_pos: ndarray, char_repr: str, game,
+                 cooldown=0, aerial=False):
+        self.is_aerial = aerial
         self.damage = damage
         self.base_damage = damage
         self.movement_speed = movement_speed
@@ -46,4 +48,3 @@ class Character(GameObj):
 
     def attack(self, coords: ndarray):
         super().attack(self.damage, coords)
-
