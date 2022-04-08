@@ -42,13 +42,14 @@ class Game:
         self._height = conf.GAME_HEIGHT
         self._width = conf.GAME_WIDTH
         self.size = np.array([self._height, self._width])
-        self.scene = Scene(self.size)
         self._input = Get()
 
+        self.scene = Scene(self.size)
         self._frame_rate = 1 / 30
         self._previous_frame = time.time()
         self.walls = []
         self.cannons = []
+        self.wizards = []
         self.buildings = []
         self.barbs = []
         self.characters = []
@@ -65,45 +66,80 @@ class Game:
         self._rages = 0
         self._heals = 0
 
-        self.new_game()
+        self.curr_level = 0
+        self.new_game(0)
 
-    def new_game(self):
+    def new_game(self, ind: int):
+        # init
+        self.scene = Scene(self.size)
+        self._frame_rate = 1 / 30
+        self._previous_frame = time.time()
+        self.walls = []
+        self.cannons = []
+        self.wizards = []
+        self.buildings = []
+        self.barbs = []
+        self.characters = []
+        self.spawners = []
+        self.last_rage = 0
+        self.last_heal = 0
+        self.active_spells = []
+        self.last_theme = time.time()
+
+        self.over = False
+        self._score = 0
+        self._start_time = time.time()
+        self._troops = 0
+        self._rages = 0
+        self._heals = 0
+        os.system("pkill mpg123")
+        if ind == 0:
+            import src.levels.level1 as lvl
+        elif ind == 1:
+            import src.levels.level2 as lvl
+        else:
+            import src.levels.level3 as lvl
+
         # add townHall
-        self.townHall = TownHall(np.array([int(self._height / 2), int(self._width / 2)]), self)
+        self.townHall = TownHall(np.array(lvl.TOWNHALL), self)
         self.scene.add_object(self.townHall)
+        self.buildings.append(self.townHall)
 
         # add walls
-        town_hall_pos = self.townHall.start_pos
-        for i in range(-10, 11):
-            self.walls.append(Wall(np.array([town_hall_pos[0] - 10, town_hall_pos[1] - i]), self))
-            self.walls.append(Wall(np.array([town_hall_pos[0] + 10, town_hall_pos[1] - i]), self))
-        for i in range(-9, 10):
-            self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] - 10]), self))
-            self.walls.append(Wall(np.array([town_hall_pos[0] - i, town_hall_pos[1] + 10]), self))
+        for i in lvl.WALLS:
+            self.walls.append(Wall(np.array(i), self))
 
-        self.buildings.append(Hut(np.array([int(self._height / 4), int(self._width / 4)]), self))
-        self.buildings.append(Hut(np.array([int(self._height / 4), int(3 * self._width / 4)]), self))
-        self.buildings.append(Hut(np.array([int(3 * self._height / 4), int(self._width / 4)]), self))
-        self.buildings.append(Hut(np.array([int(3 * self._height / 4), int(3 * self._width / 4)]), self))
-        self.buildings.append(Hut(np.array([town_hall_pos[0] - 5, town_hall_pos[1] + 3]), self))
+        # add huts
+        for i in lvl.HUTS:
+            self.buildings.append(Hut(np.array(i), self))
 
-        self.cannons.append(WizardTower(np.array([town_hall_pos[0] - 7, town_hall_pos[1] + 7]), self))
-        self.cannons.append(WizardTower(np.array([30, 20]), self))
-        self.cannons.append(WizardTower(np.array([self.size[0] - 10, self.size[1] - 10]), self))
+        # add cannons
+        for i in lvl.CANNONS:
+            self.cannons.append(Cannon(np.array(i), self))
 
-        self.spawners.append(BalloonSpawner(np.array([10, 10]), self))
-        self.spawners.append(BalloonSpawner(np.array([25, 140]), self))
-        self.spawners.append(BalloonSpawner(np.array([30, 100]), self))
+        # add wizard tower
+        for i in lvl.WIZARDS:
+            self.wizards.append(WizardTower(np.array(i), self))
 
-        self.buildings.append(self.townHall)
         for cannon in self.cannons:
             self.buildings.append(cannon)
+        for wizard in self.wizards:
+            self.buildings.append(wizard)
+
+        # add spawners
+        for i in lvl.BARB_SPAWNERS:
+            self.spawners.append(BarbSpawner(np.array(i), self))
+        for i in lvl.ARCHER_SPAWNERS:
+            self.spawners.append(ArcherSpawner(np.array(i), self))
+        for i in lvl.BALLOON_SPAWNERS:
+            self.spawners.append(BalloonSpawner(np.array(i), self))
 
         # add king
-        # self.player = King(np.array([0, 0]), self)
+        # TODO: prompt to choose player character
         self.player = Queen(np.array([0, 0]), self)
         self.characters.append(self.player)
 
+        self.curr_level = ind
         play_audio("src/assets/intro.mp3")
         play_audio("src/assets/theme.mp3")
 
@@ -156,6 +192,12 @@ class Game:
                 self.buildings.remove(cannon)
                 self.cannons.remove(cannon)
                 self._score += conf.CANNON_SCORE
+
+        for wizard in self.wizards:
+            if wizard is not None and wizard.is_dead():
+                self.buildings.remove(wizard)
+                self.wizards.remove(wizard)
+                self._score += conf.WIZARD_SCORE
 
         for wall in self.walls:
             if wall is not None and wall.is_dead():
@@ -220,6 +262,9 @@ class Game:
         for cannon in self.cannons:
             cannon.update()
 
+        for wizard in self.wizards:
+            wizard.update()
+
         for spell in self.active_spells:
             spell.update()
 
@@ -227,8 +272,11 @@ class Game:
         if len(self.buildings) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                 self._heals)
+            if self.curr_level <= 1:
+                self.new_game(self.curr_level + 1)
+            else:
+                self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                                     self._heals)
         elif len(self.characters) == 0:
             self.over = True
             time.sleep(2)
