@@ -30,7 +30,8 @@ from src.utils import wait, play_audio
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, playerType: int):
+        self.gameType = playerType
         # check if current terminal size is sufficient for the game
         self.player = None
         self.townHall = None
@@ -62,12 +63,14 @@ class Game:
         self.over = False
         self._score = 0
         self._start_time = time.time()
-        self._troops = 0
+        self._barbs = 0
+        self._archers = 0
+        self._balloons = 0
         self._rages = 0
         self._heals = 0
 
-        self.curr_level = 0
-        self.new_game(0)
+        self.curr_level = 1
+        self.new_game(1)
 
     def new_game(self, ind: int):
         # init
@@ -89,13 +92,15 @@ class Game:
         self.over = False
         self._score = 0
         self._start_time = time.time()
-        self._troops = 0
+        self._barbs = 0
+        self._archers = 0
+        self._balloons = 0
         self._rages = 0
         self._heals = 0
         os.system("pkill mpg123")
-        if ind == 0:
+        if ind == 1:
             import src.levels.level1 as lvl
-        elif ind == 1:
+        elif ind == 2:
             import src.levels.level2 as lvl
         else:
             import src.levels.level3 as lvl
@@ -135,8 +140,13 @@ class Game:
             self.spawners.append(BalloonSpawner(np.array(i), self))
 
         # add king
-        # TODO: prompt to choose player character
         self.player = Queen(np.array([0, 0]), self)
+        if self.gameType == 1:
+            self.player = Queen(np.array([0, 0]), self)
+        elif self.gameType == 2:
+            self.player = King(np.array([0, 0]), self)
+        else:
+            sys.exit(1)
         self.characters.append(self.player)
 
         self.curr_level = ind
@@ -156,8 +166,19 @@ class Game:
                 self.player.move(inp)
 
         if inp in Spawner.KEYS:
+            if inp in BarbSpawner.KEYS and self._barbs == conf.BARB_LIMIT * self.curr_level:
+                return
+            elif inp in ArcherSpawner.KEYS and self._archers == conf.ARCHER_LIMIT * self.curr_level:
+                return
+            elif inp in BalloonSpawner.KEYS and self._balloons == conf.BALLOON_LIMIT * self.curr_level:
+                return
             if self.spawners[int(inp) - int("1")].update():
-                self._troops += 1
+                if inp in BarbSpawner.KEYS:
+                    self._barbs += 1
+                elif inp in ArcherSpawner.KEYS:
+                    self._archers += 1
+                else:
+                    self._balloons += 1
 
         if inp in Spell.KEYS:
             if inp == 'r':
@@ -174,8 +195,8 @@ class Game:
         if inp == 'q':
             self.over = True
             time.sleep(2)
-            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                 self._heals)
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._barbs, self._archers,
+                                 self._balloons, self._rages, self._heals)
 
     def prune_dead(self):
         if self.townHall is not None and self.townHall.is_dead():
@@ -272,23 +293,21 @@ class Game:
         if len(self.buildings) == 0:
             self.over = True
             time.sleep(2)
-            if self.curr_level <= 1:
+            if self.curr_level <= 2:
                 self.new_game(self.curr_level + 1)
             else:
-                self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                     self._heals)
+                self.scene.game_over(True, self._score, int(time.time() - self._start_time), self._barbs, self._archers,
+                                     self._balloons, self._rages, self._heals)
         elif len(self.characters) == 0:
             self.over = True
             time.sleep(2)
-            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                 self._heals)
+            self.scene.game_over(False, self._score, int(time.time() - self._start_time), self._barbs, self._archers,
+                                 self._balloons, self._rages, self._heals)
 
     def play(self):
         while not self.over:
             # Game logic
             self.handle_input()
-            if time.time() - self.last_theme > 180:
-                play_audio("src/assets/theme.mp3")
             if not self.over:
                 self.prune_dead()
                 self.update_alive()
@@ -296,11 +315,12 @@ class Game:
                 # Render objects
                 self.scene.clear()
                 if self.player is not None:
-                    self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
+                    self.scene.hud(self._score, int(time.time() - self._start_time), self._barbs, self._archers,
+                                   self._balloons, self._rages,
                                    self._heals, self.player.health, self.player.max_health)
                 else:
-                    self.scene.hud(self._score, int(time.time() - self._start_time), self._troops, self._rages,
-                                   self._heals)
+                    self.scene.hud(self._score, int(time.time() - self._start_time), self._barbs, self._archers,
+                                   self._balloons, self._rages, self._heals)
                 self.render()
                 self.scene.display()
 

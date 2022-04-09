@@ -71,7 +71,7 @@ class Scene:
         with open(file_name, 'wb') as handle:
             pickle.dump(self._all_frames, handle)
 
-    def game_over(self, won, score, time_elapsed, troops, rage, heal):
+    def game_over(self, won, score, time_elapsed, barbs, archers, balloons, rage, heal):
         os.system("clear")
         print_screen = self.move_cursor(int(self._size[0] / 2), int(self._size[1] / 2))
         os.system("pkill mpg123")
@@ -87,13 +87,14 @@ class Scene:
         print_screen += "You scored: " + str(score) + "\n"
         print_screen += "You survived for: " + str(time_elapsed) + "s\n"
         print_screen += "You expended: \n" \
-                        + str(troops) + " barbarians\n" + str(rage) + " rages\n" + str(heal) + " heals\n"
+                        + str(barbs) + f" barbarians,\n{archers} archers,\n{balloons} balloons,\n" + str(
+                            rage) + " rages,\n" + str(heal) + " heals\n"
         print_screen += "\n\n\n"
         self._all_frames = np.append(self._all_frames, print_screen)
         self.save_replay()
         sys.stdout.write(print_screen)
 
-    def hud(self, score, time_elapsed, troops, rage, heal, health=0, max_health=100):
+    def hud(self, score, time_elapsed, barbs, archers, balloons, rage, heal, health=0, max_health=100):
         print_screen = self.move_cursor(0, 0)
         print_screen += "PLayer health: "
         for i in range(health * 10 // max_health):
@@ -104,5 +105,6 @@ class Scene:
         print_screen += "Score: " + str(score) + "\n"
         print_screen += "Time elapsed: " + str(time_elapsed) + "s\n"
         print_screen += "You expended: \n" \
-                        + str(troops) + " barbarians\n" + str(rage) + " rages\n" + str(heal) + " heals\n"
+                        + str(barbs) + f" barbarians, {archers} archers, {balloons} balloons, " + str(
+                            rage) + " rages, " + str(heal) + " heals\n"
         sys.stdout.write(print_screen)
