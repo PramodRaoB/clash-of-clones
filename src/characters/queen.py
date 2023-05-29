@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from src import config as conf
@@ -7,9 +9,13 @@ from src.utils import wait, play_audio
 
 
 class Queen(Playable):
+    EAGLE = 'e'
 
     def __init__(self, start_pos, game):
         self._last_moved = 3
+        self.last_eagle = time.time()
+        self.use_eagle = False
+        self.use_eagle_time = time.time()
         super().__init__(conf.QUEEN_HP, conf.QUEEN_DAMAGE, conf.QUEEN_SPEED, start_pos, '☥', game, conf.QUEEN_COOLDOWN,
                          conf.QUEEN_RADIUS)
 
@@ -31,3 +37,21 @@ class Queen(Playable):
             return False
         else:
             play_audio("src/assets/swing.mp3")
+
+    def eagle(self):
+        if wait(self.last_eagle, conf.EAGLE_COOLDOWN):
+            return False
+        self.last_eagle = time.time()
+        coords = np.empty((0, 2), int)
+        for i in range(self.start_pos[0] - conf.EAGLE_RADIUS, self.start_pos[0] + conf.EAGLE_RADIUS + 1):
+            for j in range(self.start_pos[1] - conf.EAGLE_RADIUS, self.start_pos[1] + conf.EAGLE_RADIUS + 1):
+                coords = np.append(coords, np.array([[i, j]]), axis=0)
+        for i in range(len(coords)):
+            coords[i][0] += Character.DX[self._last_moved] * conf.EAGLE_RANGE
+            coords[i][1] += Character.DY[self._last_moved] * conf.EAGLE_RANGE
+
+        if not super().attack(coords):
+            return False
+        else:
+            play_audio("src/assets/swing.mp3")
+            return True

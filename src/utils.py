@@ -24,5 +24,6 @@ def numbers(path):
 
 
 def play_audio(file):
-    with open(os.devnull, 'wb') as devnull:
-        subprocess.Popen(["mpg123", file], stdout=devnull, stderr=devnull)
+    pass
+    # with open(os.devnull, 'wb') as devnull:
+    #     subprocess.Popen(["mpg123", file], stdout=devnull, stderr=devnull)

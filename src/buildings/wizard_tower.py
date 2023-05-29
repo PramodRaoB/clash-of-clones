@@ -42,7 +42,6 @@ class WizardTower(Building):
             for j in range(target_pos[1] - self._radius, target_pos[1] + self._radius + 1):
                 all_targets.update(self.game.get_character_on_coord(np.array([i, j])))
 
-        sys.stderr.write(str(all_targets))
         for i in all_targets:
             play_audio("src/assets/wizard_tower.mp3")
             i.take_damage(self._damage)

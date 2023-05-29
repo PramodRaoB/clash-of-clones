@@ -192,6 +192,11 @@ class Game:
                     Heal(self)
                     self._heals += 1
 
+        if inp == 'e' and self.gameType == 1:
+            if not self.player.use_eagle:
+                self.player.use_eagle = True
+                self.player.use_eagle_time = time.time()
+
         if inp == 'q':
             self.over = True
             time.sleep(2)
@@ -276,6 +281,13 @@ class Game:
         return ret
 
     def update_alive(self):
+        if self.gameType == 1 and self.player is not None:
+            # if queen
+            if self.player.use_eagle and not wait(self.player.use_eagle_time, conf.EAGLE_DELAY):
+                if self.player.eagle():
+                    self.player.use_eagle = False
+
+
         for barb in self.barbs:
             if barb is not None and not barb.is_dead():
                 barb.update()

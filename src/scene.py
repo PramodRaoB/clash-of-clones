@@ -97,9 +97,9 @@ class Scene:
     def hud(self, score, time_elapsed, barbs, archers, balloons, rage, heal, health=0, max_health=100):
         print_screen = self.move_cursor(0, 0)
         print_screen += "PLayer health: "
-        for i in range(health * 10 // max_health):
+        for i in range(int(health * 10 / max_health)):
             print_screen += "❤"
-        for i in range((max_health - health) * 10 // max_health):
+        for i in range(int((max_health - health) * 10 / max_health) + 10):
             print_screen += " "
         print_screen += "\n"
         print_screen += "Score: " + str(score) + "\n"
